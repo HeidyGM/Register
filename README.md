@@ -5,7 +5,7 @@ Esta información recibida debe contener 3 datos:
 
 + Hash 1: Dirección pública de la "Wallet".
 + Hash 2: Dirección privada de la "Wallet".
-+ Monto: corresponde a la cantidad de dinero a ingresar en la "Wallet".
++ Monto: Corresponde a la cantidad de dinero a ingresar.
 
 ```bash
 $hash_1 = $_POST["h1"];
@@ -14,43 +14,21 @@ $hash_2 = $_POST["h2"];
 ```
 
 ## Recepción de información
-Se recibe la información en un archivo Json donde se cambia a String para la lectura de datos.
+Se recibe la información en un archivo Json para la lectura de datos.
 
 ```bash
-// Nombre Archivo
-$txtNombre = $_FILES['fichero_usuario']['name'];
- 
-// Nombre temporal
-$txtNombreTemporal = $_FILES['fichero_usuario']['tmp_name'];
- 
-// Estension del archivo
-$txtTmp = explode(".", $txtNombre);
-$txtExtension = strtolower(end($txtTmp));
- 
-// cambia el nombre a uno seguro con encriptacion MD5
-$txtNombreNuevo = md5(time() . $txtNombre) . '.' . $txtExtension;
- 
-// Rutas nuevas para guardar temporalmente
-$rutaTemporal = './tmp/';
-$rutaDestino = $rutaTemporal . $txtNombreNuevo;
- 
-// Guardamos el archivo temporal para poder leerlo
-if(move_uploaded_file($txtNombreTemporal, $rutaDestino)) {
-    $mensaje = NULL;
-    $mensaje1 = NULL;
- 
-    // Abrir y leer el archivo 
-    $txtAbrir= fopen($rutaDestino, 'r');
-    $txtLeer = fgets($txtAbrir);
-    fclose($txtAbrir);
- 
-    // Convertir a JSON el string
-    $arrayTxt = json_decode($txtLeer);
- 
-    // SACAMOS AMBOS HASH
-    $hash_1 = $arrayTxt->hash_1;
-    $hash_2 = $arrayTxt->hash_2;
-    $dinero = (int)$arrayTxt->dinero;
+<?php
+require "validarHash.php";
+
+if(isset($_POST["h1"], $_POST["h2"], $_POST["dinero"])){
+
+    $validador=new validarHash("","","" );
+    $resp=$validador->validarInfo($_POST["h1"],$_POST["h2"], $_POST["dinero"]);
+
+    echo json_encode($resp);
+}
+
+?>
 
 ```
 
@@ -59,27 +37,46 @@ if(move_uploaded_file($txtNombreTemporal, $rutaDestino)) {
 Metodo donde se realiza la verificación de los hash recibidos ademas del monto.
 
 ```bash
-     if($dinero === 0){
+    <?php 
+
+class validarHash{
+    private $hash_1;
+    private $hash_2;
+    private $dinero;
+
+
+    public function __construct($hash_1, $hash_2, $dinero)
+    {
+        $this->hash_1 = $hash_1;
+        $this->hash_2 = $hash_2;
+        $this->dinero = $dinero;
+    }
+    //Metodos de validar información
+public function validarInfo($h1, $h2, $d){
+    // VALIDAMOS EL TAMAÑO DE LOS HASH
+    if (strlen ($h1) == 40 && strlen ($h2) == 40) { 
+        $mensaje = "Sus dos llaves HASH son correctas "."<br />";
+    } else {
+        if (strlen ($h1) != 40) {
+            $mensaje = 'Hash 2 valido-------- Hash1 no tiene la longitud adecuada - tiene '.strlen ($h1).' caracteres'."<br />";
+        } else if (strlen ($h2) != 40) {
+            $mensaje = 'Hash 1 valido-------- Hash2 no tiene la longitud adecuada -tiene '.strlen ($h2).' caracteres'."<br />";
+        } 
+    }
+    //VALIDAR QUE LO INGRESADO EN DINERO SOLO SEAN NUMEROS
+    if($d === 0){
         $mensaje1 = "El monto ingresado no corresponde a un valor númerico"."<br />";
     }else{
         $mensaje1 = "El monto ingresado esta correcto";
     }
-    // VALIDAMOS EL TAMAÑO DE LOS HASH
-    if (strlen ($hash_1) == 40 && strlen ($hash_2) == 40) {
-        $mensaje = "Sus dos llaves HASH son correctas "."<br />";
-    } else {
-        if (strlen ($hash_1) != 40) {
-            $mensaje = 'Hash 2 valido-------- Hash1 no tiene la longitud adecuada - tiene '.strlen ($hash_1).' caracteres';
-        } else if (strlen ($hash_2) != 40) {
-            $mensaje = 'Hash 1 valido-------- Hash2 no tiene la longitud adecuada -tiene '.strlen ($hash_2).' caracteres';
-        } 
-    }
- 
-} else {
-  $mensaje = 'Error mientras se cargaba el archivo';
+
+    
 }
- 
-unlink($rutaDestino);
-echo $mensaje,$mensaje1;
+}
+$Informacion = json_encode($mensaje, $mensaje1);
+return $Informacion;
+
+
+?>
  
 ```
