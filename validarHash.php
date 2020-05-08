@@ -31,11 +31,12 @@ public function validarInfo($h1, $h2, $d){
         $mensaje1 = "El monto ingresado esta correcto";
     }
 
+  $Informacion = json_encode($mensaje, $mensaje1);
+  return $Informacion;  
     
 }
 }
-$Informacion = json_encode($mensaje, $mensaje1);
-return $Informacion;
+
 
 
 ?>
