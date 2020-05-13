@@ -2,7 +2,7 @@
 
 Es un software realizado en PHP enfocado a la verificación de los datos enviados por el  componente "Coodinador" donde se responderá "verdadero" o "falso" según la información recibida.
 
-url:  http://register.local/recibirData.php
+url:  http://142.44.246.92/register/recibirData.php
 
 Esta información recibida debe contener 3 datos:
 
